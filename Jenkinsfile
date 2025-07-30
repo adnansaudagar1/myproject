@@ -11,14 +11,16 @@ pipeline {
         stage('Deploy to EC2') {
             steps {
                 sshagent(['ec2-ssh-key']) {
-                    // Step 1: Remote EC2 folder clear
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@13.204.66.41 "sudo rm -rf /var/www/html/*"'
+                    sh '''
+                        echo "📂 Copying files to EC2..."
+                        scp -o StrictHostKeyChecking=no -r * ubuntu@13.204.66.41:/home/ubuntu/
 
-                    // Step 2: Copy project files to EC2
-                    sh 'scp -o StrictHostKeyChecking=no -r * ubuntu@13.204.66.41:/var/www/html/'
+                        echo "📦 Moving files to /var/www/html..."
+                        ssh -o StrictHostKeyChecking=no ubuntu@13.204.66.41 "sudo rm -rf /var/www/html/* && sudo mv /home/ubuntu/* /var/www/html/"
 
-                    // Step 3: Restart nginx
-                    sh 'ssh -o StrictHostKeyChecking=no ubuntu@13.204.66.41 "sudo systemctl restart nginx"'
+                        echo "🔄 Restarting Nginx..."
+                        ssh -o StrictHostKeyChecking=no ubuntu@13.204.66.41 "sudo systemctl restart nginx"
+                    '''
                 }
             }
         }
