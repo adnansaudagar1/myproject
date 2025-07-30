@@ -1,11 +1,11 @@
-
 pipeline {
     agent any
     
     stages {
         stage('Pull Code') {
             steps {
-                git 'https://github.com/<your-username>/<repo-name>.git'
+                // ✅ Correct GitHub repo URL
+                git 'https://github.com/adnansaudagar1/myproject.git'
             }
         }
         
@@ -13,16 +13,15 @@ pipeline {
             steps {
                 sshPublisher(publishers: [
                     sshPublisherDesc(
-                        configName: 'web-server', // Jenkins SSH server config ka naam
+                        configName: 'web-server',
                         transfers: [
                             sshTransfer(
-                                sourceFiles: 'index.html',
+                                sourceFiles: '**/*',
                                 removePrefix: '',
-                                remoteDirectory: '',
+                                remoteDirectory: '/var/www/html',
                                 execCommand: 'sudo systemctl restart apache2'
                             )
                         ],
-                        usePromotionTimestamp: false,
                         verbose: true
                     )
                 ])
@@ -30,3 +29,4 @@ pipeline {
         }
     }
 }
+
