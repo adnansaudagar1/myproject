@@ -12,14 +12,12 @@ pipeline {
             steps {
                 sshagent(['ec2-ssh-key']) {
                     sh '''
-                        scp -o StrictHostKeyChecking=no -r * ubuntu@<EC2-Public-IP>:/usr/share/nginx/html/
-                        ssh -o StrictHostKeyChecking=no ubuntu@<EC2-Public-IP> "sudo systemctl restart nginx"
+                        ssh -o StrictHostKeyChecking=no ubuntu@<EC2_PUBLIC_IP> "sudo rm -rf /var/www/html/*"
+                        scp -o StrictHostKeyChecking=no -r * ubuntu@<EC2_PUBLIC_IP>:/var/www/html/
+                        ssh -o StrictHostKeyChecking=no ubuntu@<EC2_PUBLIC_IP> "sudo systemctl restart nginx"
                     '''
                 }
             }
         }
     }
 }
-
-
-
