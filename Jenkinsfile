@@ -2,31 +2,23 @@ pipeline {
     agent any
     
     stages {
-        stage('Pull Code') {
+        stage('Checkout Code') {
             steps {
-                // ✅ Correct GitHub repo URL
-                git 'https://github.com/adnansaudagar1/myproject.git'
+                git branch: 'main', url: 'https://github.com/adnansaudagar1/myproject.git'
             }
         }
-        
-        stage('Deploy to Web Server') {
+
+        stage('Deploy to EC2') {
             steps {
-                sshPublisher(publishers: [
-                    sshPublisherDesc(
-                        configName: 'web-server',
-                        transfers: [
-                            sshTransfer(
-                                sourceFiles: '**/*',
-                                removePrefix: '',
-                                remoteDirectory: '/var/www/html',
-                                execCommand: 'sudo systemctl restart apache2'
-                            )
-                        ],
-                        verbose: true
-                    )
-                ])
+                sshagent(['ec2-ssh-key']) {
+                    sh '''
+                        scp -o StrictHostKeyChecking=no -r * ubuntu@<EC2-Public-IP>:/usr/share/nginx/html/
+                        ssh -o StrictHostKeyChecking=no ubuntu@<EC2-Public-IP> "sudo systemctl restart nginx"
+                    '''
+                }
             }
         }
     }
 }
+
 
